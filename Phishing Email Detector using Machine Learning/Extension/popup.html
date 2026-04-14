@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PhishGuard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="shield-wrap">
+      <svg class="shield-icon" id="shield-svg" viewBox="0 0 48 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 2L4 10V26C4 38.15 12.95 49.48 24 52C35.05 49.48 44 38.15 44 26V10L24 2Z" fill="url(#sg)" stroke="rgba(100,120,255,0.4)" stroke-width="1"/>
+        <path id="shield-check" d="M15 28l6 6 12-12" stroke="#aab4ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path id="shield-off" d="M18 22l12 12M30 22L18 34" stroke="#555" stroke-width="2.5" stroke-linecap="round" display="none"/>
+        <defs>
+          <linearGradient id="sg" x1="4" y1="2" x2="44" y2="52" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#1a1a3a"/>
+            <stop offset="1" stop-color="#0d0d20"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <h1 class="title">PhishGuard</h1>
+    <p class="subtitle">AI-powered email threat detection</p>
+
+    <div class="divider"></div>
+
+    <!-- Toggle -->
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <span class="toggle-label" id="toggle-label">Protection Active</span>
+        <span class="toggle-desc" id="toggle-desc">Monitoring your emails</span>
+      </div>
+      <button class="toggle-btn" id="toggle-btn" aria-label="Toggle protection">
+        <span class="toggle-knob"></span>
+      </button>
+    </div>
+
+    <div class="status-row">
+      <span class="status-dot" id="status-dot"></span>
+      <span class="status-text" id="status-text">Active on Gmail &amp; Outlook</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- API status row -->
+    <div class="api-row" id="api-row">
+      <span class="api-dot" id="api-dot">◉</span>
+      <span class="api-text" id="api-text">Checking local API…</span>
+      <button class="api-retry" id="api-retry" title="Retry connection">↺</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Counter card -->
+    <div class="counter-card" id="counter-card">
+      <div class="counter-left">
+        <span class="counter-icon">☠️</span>
+        <div class="counter-text">
+          <span class="counter-label">Phishing Emails Caught</span>
+          <span class="counter-sub">All-time detections</span>
+        </div>
+      </div>
+      <div class="counter-right">
+        <span class="counter-num" id="phish-count">0</span>
+        <button class="counter-reset" id="reset-btn" title="Reset counter">↺</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="legend">
+      <div class="legend-item danger">
+        <span class="legend-icon">⚠️</span>
+        <div>
+          <span class="legend-label">Phishing Detected</span>
+          <span class="legend-desc">Alert shown — threat found</span>
+        </div>
+      </div>
+      <div class="legend-item safe">
+        <span class="legend-icon">🔍</span>
+        <div>
+          <span class="legend-label">Scanning</span>
+          <span class="legend-desc">Brief scan, silent if safe</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>v1.2 · Local API · Gmail &amp; Outlook</span>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
