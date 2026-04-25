@@ -1,0 +1,15 @@
+{
+  "rows_raw": 18650,
+  "rows_after_cleaning": 17152,
+  "removed_invalid_label": 0,
+  "removed_low_quality_text": 567,
+  "removed_duplicates": 931,
+  "removed_conflict_rows": 0,
+  "removed_conflict_texts": 0,
+  "min_text_length_chars": 20,
+  "min_text_length_words": 3,
+  "label_distribution": {
+    "0": 10693,
+    "1": 6459
+  }
+}
