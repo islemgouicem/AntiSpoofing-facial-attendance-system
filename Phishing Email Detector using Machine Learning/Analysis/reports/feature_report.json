@@ -1,0 +1,88 @@
+{
+  "total_features": 8022,
+  "handcrafted_features": {
+    "count": 22,
+    "names": [
+      "url_count",
+      "email_count",
+      "num_count",
+      "word_count",
+      "char_count",
+      "url_density",
+      "num_density",
+      "avg_word_length",
+      "exclamation_count",
+      "question_count",
+      "punct_count",
+      "urgency_count",
+      "financial_count",
+      "action_count",
+      "threat_count",
+      "caps_ratio",
+      "urgency_density",
+      "unique_word_ratio",
+      "sentence_count",
+      "avg_sentence_length",
+      "placeholder_ratio",
+      "digit_char_ratio"
+    ],
+    "groups": {
+      "structural": [
+        "url_count",
+        "email_count",
+        "num_count",
+        "word_count",
+        "char_count",
+        "url_density",
+        "num_density",
+        "avg_word_length",
+        "exclamation_count",
+        "question_count",
+        "punct_count"
+      ],
+      "urgency_sentiment": [
+        "urgency_count",
+        "financial_count",
+        "action_count",
+        "threat_count",
+        "caps_ratio",
+        "urgency_density"
+      ],
+      "stylometric": [
+        "unique_word_ratio",
+        "sentence_count",
+        "avg_sentence_length",
+        "placeholder_ratio",
+        "digit_char_ratio"
+      ]
+    }
+  },
+  "tfidf_word": {
+    "max_features": 5000,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "actual_features": 5000,
+    "analyzer": "word"
+  },
+  "tfidf_char": {
+    "max_features": 3000,
+    "ngram_range": [
+      3,
+      5
+    ],
+    "actual_features": 3000,
+    "analyzer": "char_wb"
+  },
+  "scaling": "MinMaxScaler on handcrafted features (fit on train only)",
+  "top_mutual_info_features": [],
+  "artifacts": {
+    "features_train_csv": "data\\processed\\features_train.csv",
+    "features_val_csv": "data\\processed\\features_val.csv",
+    "features_test_csv": "data\\processed\\features_test.csv",
+    "X_train_full_npz": "data\\processed\\X_train_full.npz",
+    "X_val_full_npz": "data\\processed\\X_val_full.npz",
+    "X_test_full_npz": "data\\processed\\X_test_full.npz"
+  }
+}
