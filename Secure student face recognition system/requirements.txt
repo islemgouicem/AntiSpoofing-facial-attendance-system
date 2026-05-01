@@ -1,0 +1,16 @@
+cmake>=3.25
+
+# dlib-bin
+face_recognition==1.3.0
+
+opencv-python==4.9.0.80
+Pillow>=10.0
+
+numpy<2,>=1.23
+
+torch==2.8.0
+torchvision==0.23.0
+
+easydict>=1.9
+tqdm>=4.65
+tensorboardX>=2.6
