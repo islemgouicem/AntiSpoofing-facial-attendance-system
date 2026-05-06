@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 import '../../core/theme/app_colors.dart';
 import '../../domain/models/group.dart';
 import '../../providers/app_providers.dart';
@@ -49,7 +50,7 @@ class _GroupsPageState extends ConsumerState<GroupsPage> {
               final repo = ref.read(groupRepoProvider);
               await repo.create(
                 name: nameCtrl.text.trim(),
-                academicYear: yearCtrl.text.trim(),
+                academicYear: yearCtrl.text.trim(), id: const Uuid().v4(),
               );
               ref.invalidate(groupsProvider);
               if (ctx.mounted) Navigator.pop(ctx);

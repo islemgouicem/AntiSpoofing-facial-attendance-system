@@ -1,4 +1,4 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../domain/models/teaching_assignment.dart';
 import '../database/app_database.dart';
 
@@ -22,8 +22,11 @@ class TeachingAssignmentRepository {
 
   Future<void> insert(TeachingAssignment assignment) async {
     final db = await _db.database;
-    await db.insert(_table, assignment.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      _table,
+      assignment.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> delete(String id) async {

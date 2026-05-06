@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,10 +11,16 @@ import '../../domain/models/student.dart';
 import '../../domain/models/attendance_record.dart';
 import '../../domain/models/academic_session.dart';
 import '../../providers/app_providers.dart';
+import 'package:http/http.dart' as http;
 
 class LiveSessionPage extends ConsumerStatefulWidget {
   final String sessionId;
-  const LiveSessionPage({super.key, required this.sessionId});
+  final String assignmentId; // ← add this
+  const LiveSessionPage({
+    super.key, 
+    required this.sessionId,
+    required this.assignmentId, // ← add this
+  });
   @override
   ConsumerState<LiveSessionPage> createState() => _LiveSessionPageState();
 }
@@ -27,13 +34,32 @@ class _LiveSessionPageState extends ConsumerState<LiveSessionPage> {
   Duration _elapsed = Duration.zero;
   DateTime? _startTime;
   bool _active = true;
+  String _cameraStatus = 'Connecting to camera...';
+  bool _cameraError = false;
+
+  late final _api; // ← save ref early
 
   @override
   void initState() {
     super.initState();
+    _api = ref.read(recognitionApiProvider); // ← read once here
     _startTime = DateTime.now();
     _startSessionInDb();
-    _startTimers();
+    _startCamera();
+  }
+
+  Future<void> _startCamera() async {
+    try {
+      await _api.startCamera(); // ← explicitly start camera
+      _startTimers();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _cameraStatus = 'Failed to start camera: $e';
+          _cameraError = true;
+        });
+      }
+    }
   }
 
   Future<void> _startSessionInDb() async {
@@ -41,73 +67,100 @@ class _LiveSessionPageState extends ConsumerState<LiveSessionPage> {
   }
 
   void _startTimers() {
-    _frameTimer = Timer.periodic(AppConstants.frameInterval, (_) => _fetchFrame());
+    // Poll frames directly like FaceRegistrationPage does
+    _frameTimer = Timer.periodic(const Duration(milliseconds: 50), (_) => _fetchFrame());
     _recognitionTimer = Timer.periodic(AppConstants.recognitionInterval, (_) => _recognize());
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_startTime != null) {
+      if (_startTime != null && mounted) {
         setState(() => _elapsed = DateTime.now().difference(_startTime!));
       }
     });
   }
 
   Future<void> _fetchFrame() async {
-    final api = ref.read(recognitionApiProvider);
-    final bytes = await api.getFrame();
-    if (bytes != null && mounted) {
-      setState(() => _currentFrame = Uint8List.fromList(bytes));
-    }
-  }
-
-  Future<void> _recognize() async {
-    if (!_active) return;
-    final api = ref.read(recognitionApiProvider);
-    final result = await api.recognize();
-    
-    if (result != null && result.recognized && result.name != null && mounted) {
-      // Find student by name/id in DB
-      final students = await ref.read(studentsProvider.future);
-      final student = students.cast<Student?>().firstWhere(
-        (s) => s?.firstName == result.name || '${s?.firstName} ${s?.lastName}' == result.name,
-        orElse: () => null,
-      );
-
-      if (student == null) return;
-
-      final alreadyLogged = _recognized.any((e) => e.studentId == student.id);
-      if (!alreadyLogged) {
-        // Persist to DB
-        await ref.read(attendanceRepoProvider).updateRecordStatus(
-          widget.sessionId,
-          student.id,
-          AttendanceStatus.present,
-        );
-
+    try {
+      // Use same direct HTTP approach that works in FaceRegistrationPage
+      final baseUrl = _api.streamUrl.replaceAll('/stream', '');
+      final response = await http.get(Uri.parse('$baseUrl/camera/frame'));
+      if (response.statusCode == 200 && mounted) {
         setState(() {
-          _recognized.insert(0, _RecognizedEntry(
-            studentId: student.id,
-            name: '${student.firstName} ${student.lastName}',
-            confidence: result.confidence ?? 0,
-            time: DateTime.now(),
-          ));
+          _currentFrame = response.bodyBytes;
+          _cameraError = false;
+        });
+      }
+    } catch (e) {
+      if (mounted && _currentFrame == null) {
+        setState(() {
+          _cameraStatus = 'Connection error: $e';
+          _cameraError = true;
         });
       }
     }
   }
 
+Future<void> _recognize() async {
+  if (!_active) return;
+  try {
+    // Call directly so we can see the raw response
+    final baseUrl = _api.streamUrl.replaceAll('/stream', '');
+    final response = await http.post(Uri.parse('$baseUrl/recognize')); // ← POST not GET
+    
+    if (response.statusCode != 200) return;
+    
+    final json = jsonDecode(response.body);
+    final recognized = json['recognized'] as bool? ?? false;
+    final name = json['name'] as String?;
+    final reason = json['reason'] as String?;
+    
+    
+    if (!recognized || name == null || !mounted) return;
+
+    final students = await ref.read(studentsProvider.future);
+    final student = students.cast<Student?>().firstWhere(
+      (s) => s?.firstName == name || '${s?.firstName} ${s?.lastName}' == name,
+      orElse: () => null,
+    );
+
+    if (student == null) return;
+
+    final alreadyLogged = _recognized.any((e) => e.studentId == student.id);
+    if (!alreadyLogged) {
+      await ref.read(attendanceRepoProvider).updateRecordStatus(
+        widget.sessionId,
+        student.id,
+        AttendanceStatus.present,
+      );
+      if (mounted) {
+        setState(() {
+          _recognized.insert(0, _RecognizedEntry(
+            studentId: student.id,
+            name: '${student.firstName} ${student.lastName}',
+            confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+            time: DateTime.now(),
+          ));
+        });
+      }
+    }
+  } catch (e) {
+    debugPrint('❌ recognize error: $e');
+  }
+}
   void _stopSession() async {
     _active = false;
     _frameTimer?.cancel();
     _recognitionTimer?.cancel();
     _clockTimer?.cancel();
-    
+
+    try {
+      final baseUrl = _api.streamUrl.replaceAll('/stream', '');
+      await http.post(Uri.parse('$baseUrl/camera/stop'));
+    } catch (_) {}
+
     await ref.read(attendanceRepoProvider).completeSession(widget.sessionId);
     
-    if (mounted) {
-      // Return to matrix view
-      // We need to know the assignmentId to go back to the right matrix
-      // For now, go back to dashboard or previous page
-      context.pop();
-    }
+    ref.invalidate(sessionsProvider); // ← force dashboard refresh
+    
+    if (mounted) context.go('/attendance/matrix/${widget.assignmentId}');
   }
 
   @override
@@ -115,8 +168,11 @@ class _LiveSessionPageState extends ConsumerState<LiveSessionPage> {
     _frameTimer?.cancel();
     _recognitionTimer?.cancel();
     _clockTimer?.cancel();
+    _api.stopCamera(); // ← clean up
     super.dispose();
   }
+
+
 
   String _formatDuration(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -178,21 +234,30 @@ class _LiveSessionPageState extends ConsumerState<LiveSessionPage> {
                       child: Container(
                         color: Colors.black,
                         child: _currentFrame != null
-                            ? Image.memory(_currentFrame!,
-                                gaplessPlayback: true,
-                                fit: BoxFit.contain,
-                                width: double.infinity)
-                            : const Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircularProgressIndicator(color: Colors.white54),
-                                    SizedBox(height: 16),
-                                    Text('Connecting to camera...',
-                                        style: TextStyle(color: Colors.white54)),
-                                  ],
-                                ),
+                          ? Image.memory(
+                              _currentFrame!,
+                              gaplessPlayback: true,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                            )
+                          : Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _cameraError
+                                      ? const Icon(Icons.error_outline, color: Colors.red, size: 48)
+                                      : const CircularProgressIndicator(color: Colors.white54),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    _cameraStatus,
+                                    style: TextStyle(
+                                      color: _cameraError ? Colors.red[300] : Colors.white54,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
+                            ),
                       ),
                     ),
                   ),
@@ -298,6 +363,7 @@ class _LiveSessionPageState extends ConsumerState<LiveSessionPage> {
     );
   }
 }
+
 
 class _RecognizedEntry {
   final String studentId;

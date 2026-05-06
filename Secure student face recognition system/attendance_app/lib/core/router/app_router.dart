@@ -52,9 +52,11 @@ final appRouter = GoRouter(
               AttendanceMatrixPage(assignmentId: state.pathParameters['assignmentId']!),
         ),
         GoRoute(
-          path: '/attendance/live/:sessionId',
-          builder: (_, state) =>
-              LiveSessionPage(sessionId: state.pathParameters['sessionId']!),
+          path: '/attendance/live/:sessionId/:assignmentId', // ← add assignmentId
+          builder: (context, state) => LiveSessionPage(
+            sessionId: state.pathParameters['sessionId']!,
+            assignmentId: state.pathParameters['assignmentId']!, // ← pass it
+          ),
         ),
         GoRoute(
           path: '/register-face/:studentId/:studentName',

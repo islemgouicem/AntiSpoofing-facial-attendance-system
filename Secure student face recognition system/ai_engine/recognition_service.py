@@ -22,7 +22,7 @@ class RecognitionService:
                 with open(path, "rb") as f:
                     self._embeddings_cache[name] = pickle.load(f)
 
-    def recognize(self, frame) -> tuple | None:
+    def recognize(self, frame):
         """Recognize a face. Returns (name, confidence) or None."""
         encodings = face_recognition.face_encodings(frame)
         if len(encodings) == 0:

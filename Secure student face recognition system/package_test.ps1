@@ -5,9 +5,9 @@ $AppDir = Join-Path $ProjectRoot "attendance_app"
 $EngineDir = Join-Path $ProjectRoot "ai_engine"
 $OutDir = Join-Path $ProjectRoot "AttendanceSystem_Test"
 
-Write-Host "========================================="
-Write-Host " BUILDING ATTENDANCE SYSTEM TEST RUNNER  "
-Write-Host "========================================="
+Write-Host "=========================================" 
+Write-Host " BUILDING ATTENDANCE SYSTEM TEST RUNNER  " 
+Write-Host "=========================================" 
 
 # 1. Clean output directory
 if (Test-Path $OutDir) {

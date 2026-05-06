@@ -1,3 +1,4 @@
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 import '../database/app_database.dart';
 import '../../domain/models/group.dart';
@@ -29,19 +30,24 @@ class GroupRepository {
   }
 
   Future<Group> create({
+    required String id,
     required String name,
     required String academicYear,
   }) async {
     final now = DateTime.now();
     final group = Group(
-      id: _uuid.v4(),
+      id: id,
       name: name,
       academicYear: academicYear,
       createdAt: now,
       updatedAt: now,
     );
     final db = await _db.database;
-    await db.insert('groups', group.toMap());
+    await db.insert(
+      'groups',
+      group.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace, // ← handles duplicates
+    );
     return group;
   }
 

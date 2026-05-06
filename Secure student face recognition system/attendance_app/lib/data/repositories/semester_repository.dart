@@ -1,4 +1,4 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../domain/models/semester.dart';
 import '../database/app_database.dart';
 
@@ -28,15 +28,19 @@ class SemesterRepository {
 
   Future<void> insert(Semester semester) async {
     final db = await _db.database;
-    await db.insert(_table, semester.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      _table,
+      semester.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> setActive(String id) async {
     final db = await _db.database;
     await db.transaction((txn) async {
       await txn.update(_table, {'is_active': 0});
-      await txn.update(_table, {'is_active': 1}, where: 'id = ?', whereArgs: [id]);
+      await txn.update(_table, {'is_active': 1},
+          where: 'id = ?', whereArgs: [id]);
     });
   }
 

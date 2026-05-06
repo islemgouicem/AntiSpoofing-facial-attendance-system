@@ -94,6 +94,29 @@ class AttendanceRepository {
     return matrix;
   }
 
+
+  Future<List<Map<String, dynamic>>> getRecentSessionsWithDetails({int limit = 5}) async {
+    final db = await _db.database;
+    
+    // Debug: count raw sessions
+    await db.rawQuery('SELECT COUNT(*) as c FROM academic_sessions');
+    
+    final rows = await db.rawQuery('''
+      SELECT 
+        s.*,
+        m.name as module_name,
+        g.name as group_name
+      FROM academic_sessions s
+      LEFT JOIN teaching_assignments ta ON ta.id = s.assignment_id
+      LEFT JOIN modules m ON m.id = ta.module_id
+      LEFT JOIN groups g ON g.id = ta.group_id
+      ORDER BY s.started_at DESC
+      LIMIT ?
+    ''', [limit]);
+    
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
   Future<void> updateRecordStatus(String sessionId, String studentId, AttendanceStatus status) async {
     final db = await _db.database;
     final existing = await db.query(
@@ -156,5 +179,28 @@ class AttendanceRepository {
       limit: limit,
     );
     return rows.map(AcademicSession.fromMap).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getAllSessionsWithDetails() async {
+    final db = await _db.database;
+    
+    // Debug: check what's in teaching_assignments
+    final assignments = await db.rawQuery('SELECT * FROM teaching_assignments LIMIT 3');
+    
+    final rows = await db.rawQuery('''
+      SELECT 
+        s.*,
+        m.name as module_name,
+        g.name as group_name,
+        ta.group_id as debug_group_id,
+        ta.module_id as debug_module_id
+      FROM academic_sessions s
+      LEFT JOIN teaching_assignments ta ON ta.id = s.assignment_id
+      LEFT JOIN modules m ON m.id = ta.module_id
+      LEFT JOIN groups g ON g.id = ta.group_id
+      ORDER BY s.started_at DESC
+    ''');
+    
+    return List<Map<String, dynamic>>.from(rows);
   }
 }

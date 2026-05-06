@@ -35,6 +35,7 @@ class DashboardPage extends ConsumerWidget {
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
             child: Column(
+           
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Greeting ──
@@ -281,8 +282,10 @@ class _RecentSessions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Force refresh every time this widget builds
+    Future.microtask(() => ref.invalidate(sessionsProvider));
+  
     final sessionsAsync = ref.watch(sessionsProvider);
-
     return sessionsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Text('Error: $e'),
@@ -298,22 +301,34 @@ class _RecentSessions extends ConsumerWidget {
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            ),
           ),
           child: ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: sessions.length > 5 ? 5 : sessions.length,
-            separatorBuilder: (_, _) => Divider(
+            itemCount: sessions.length,
+            separatorBuilder: (_, __) => Divider(
               height: 1,
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
             itemBuilder: (context, i) {
               final s = sessions[i];
+              final sessionNumber = s['session_number'] as int? ?? i + 1;
+              final moduleName = s['module_name'] as String? ?? 'Unknown Module';
+              final groupName = s['group_name'] as String? ?? 'Unknown Group';
+              final statusStr = s['status'] as String? ?? 'pending';
+              final status = SessionStatus.values.firstWhere(
+                (e) => e.name == statusStr,
+                orElse: () => SessionStatus.pending,
+              );
+
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                 leading: Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -321,29 +336,35 @@ class _RecentSessions extends ConsumerWidget {
                   child: const Icon(Icons.event_rounded,
                       color: AppColors.primary, size: 20),
                 ),
-                title: Text(s.title ?? 'Session',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: Text(s.groupName ?? 'Unknown group',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary,
-                    )),
+                title: Text(
+                  'S$sessionNumber — $moduleName',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                subtitle: Text(
+                  groupName,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                  ),
+                ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: s.status == SessionStatus.completed
+                    color: status == SessionStatus.completed
                         ? AppColors.success.withOpacity(0.1)
                         : AppColors.warning.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    s.status.name.toUpperCase(),
+                    status.name.toUpperCase(),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: s.status == SessionStatus.completed
+                      color: status == SessionStatus.completed
                           ? AppColors.success
                           : AppColors.warning,
                     ),

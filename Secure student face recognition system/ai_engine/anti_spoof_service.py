@@ -3,7 +3,8 @@
 import os
 import sys
 import cv2
-import numpy as np
+import numpy as np  # force correct numpy first
+
 
 # Add antispoffing directory so its internal imports (src.*) resolve correctly.
 if not getattr(sys, 'frozen', False):
@@ -52,5 +53,6 @@ class AntiSpoofService:
             label = int(np.argmax(prediction))
             return label == 1
         except Exception as e:
+            print(f"[AntiSpoof] Using numpy {np.__version__} from {np.__file__}")
             print(f"[AntiSpoof] error: {e}")
             return False

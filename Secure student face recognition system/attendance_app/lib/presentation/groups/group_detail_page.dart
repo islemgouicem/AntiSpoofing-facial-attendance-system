@@ -81,7 +81,13 @@ class _GroupDetailPageState extends ConsumerState<GroupDetailPage> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back_rounded),
-                    onPressed: () => context.pop(),
+                    onPressed: () => {
+                      if (context.canPop()) {
+                          context.pop()
+                        } else {
+                          context.go('/groups') // fallback
+                        }
+                    },
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(

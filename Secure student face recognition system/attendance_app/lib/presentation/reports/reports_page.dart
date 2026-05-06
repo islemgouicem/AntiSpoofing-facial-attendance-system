@@ -30,13 +30,22 @@ class ReportsPage extends ConsumerWidget {
                 if (semester == null) return const Center(child: Text('Set up a semester to see reports.'));
 
                 return FutureBuilder(
-                  future: ref.read(attendanceRepoProvider).getSessionsForAssignment('%'), // Load all for now
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-                    if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
+                  future: ref.read(attendanceRepoProvider).getAllSessionsWithDetails(),
+                  builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
 
-                    final sessions = snapshot.data as List<AcademicSession>;
-                    if (sessions.isEmpty) return const EmptyState(icon: Icons.bar_chart_rounded, message: 'No sessions recorded yet.');
+                    final sessions = snapshot.data ?? [];
+                    if (sessions.isEmpty) {
+                      return const EmptyState(
+                        icon: Icons.bar_chart_rounded,
+                        message: 'No sessions recorded yet.',
+                      );
+                    }
 
                     return SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -45,30 +54,63 @@ class ReportsPage extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: isDark ? AppColors.darkCard : AppColors.lightCard,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                          border: Border.all(
+                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                          ),
                         ),
                         child: DataTable(
-                          headingRowColor: WidgetStateProperty.all(isDark ? AppColors.darkSurface : AppColors.lightBg),
+                          headingRowColor: WidgetStateProperty.all(
+                            isDark ? AppColors.darkSurface : AppColors.lightBg,
+                          ),
                           columns: const [
                             DataColumn(label: Text('No.', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Assignment', style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Module', style: TextStyle(fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Group', style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
                           ],
-                          rows: sessions.map((s) => DataRow(cells: [
-                            DataCell(Text('S${s.sessionNumber}')),
-                            DataCell(Text(s.assignmentId.substring(0, 8))),
-                            DataCell(Text(s.startedAt != null ? '${s.startedAt!.day}/${s.startedAt!.month}/${s.startedAt!.year}' : '—')),
-                            DataCell(Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: s.status == SessionStatus.completed
-                                    ? AppColors.success.withOpacity(0.1) : AppColors.warning.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(s.status.name, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: s.status == SessionStatus.completed ? AppColors.success : AppColors.warning)),
-                            )),
-                          ])).toList(),
+                          rows: sessions.map((s) {
+                            final sessionNumber = s['session_number'] as int? ?? 0;
+                            final moduleName = s['module_name'] as String? ?? '—';
+                            final groupName = s['group_name'] as String? ?? '—';
+                            final statusStr = s['status'] as String? ?? 'pending';
+                            final status = SessionStatus.values.firstWhere(
+                              (e) => e.name == statusStr,
+                              orElse: () => SessionStatus.pending,
+                            );
+                            final startedAtMs = s['started_at'] as int?;
+                            final startedAt = startedAtMs != null
+                                ? DateTime.fromMillisecondsSinceEpoch(startedAtMs)
+                                : null;
+
+                            return DataRow(cells: [
+                              DataCell(Text('S$sessionNumber')),
+                              DataCell(Text(moduleName)),
+                              DataCell(Text(groupName)),
+                              DataCell(Text(startedAt != null
+                                  ? '${startedAt.day}/${startedAt.month}/${startedAt.year}'
+                                  : '—')),
+                              DataCell(Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: status == SessionStatus.completed
+                                      ? AppColors.success.withOpacity(0.1)
+                                      : AppColors.warning.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Text(
+                                  status.name,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: status == SessionStatus.completed
+                                        ? AppColors.success
+                                        : AppColors.warning,
+                                  ),
+                                ),
+                              )),
+                            ]);
+                          }).toList(),
                         ),
                       ),
                     );

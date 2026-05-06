@@ -111,9 +111,13 @@ class _AttendanceMatrixPageState extends ConsumerState<AttendanceMatrixPage> {
 
   void _createNewSession(int number) async {
     final repo = ref.read(attendanceRepoProvider);
-    final session = await repo.createSession(assignmentId: widget.assignmentId, sessionNumber: number);
+    final session = await repo.createSession(
+      assignmentId: widget.assignmentId, 
+      sessionNumber: number,
+    );
     if (mounted) {
-      context.go('/attendance/live/${session.id}');
+      // Pass assignmentId so we can go back to this matrix after finishing
+      context.go('/attendance/live/${session.id}/${widget.assignmentId}');
     }
   }
 

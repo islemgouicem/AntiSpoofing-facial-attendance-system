@@ -96,8 +96,8 @@ final groupsProvider =
 });
 
 // ── Sessions ───────────────────────────────────────────────
-final sessionsProvider =
-    FutureProvider<List>((ref) async {
-  final repo = ref.watch(attendanceRepoProvider);
-  return repo.getRecentSessions();
+final sessionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final repo = ref.read(attendanceRepoProvider);
+  final result = await repo.getRecentSessionsWithDetails(limit: 5);
+  return result;
 });

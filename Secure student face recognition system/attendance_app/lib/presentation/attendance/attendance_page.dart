@@ -18,13 +18,18 @@ class AttendancePage extends ConsumerStatefulWidget {
 }
 
 class _AttendancePageState extends ConsumerState<AttendancePage> {
+
+
+
   @override
   Widget build(BuildContext context) {
     final semesterAsync = ref.watch(currentSemesterProvider);
 
+  // END DEBUG
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
+        
         children: [
           const PageHeader(
             title: 'Attendance Tracking',
@@ -36,7 +41,6 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (semester) {
                 if (semester == null) return const Center(child: Text('Please set up a semester first.'));
-
                 return FutureBuilder(
                   future: ref.read(teachingAssignmentRepoProvider).getAll(semester.id),
                   builder: (context, snapshot) {
