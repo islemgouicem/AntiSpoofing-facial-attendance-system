@@ -148,6 +148,7 @@ flutter run -d linux
 Detects phishing emails using machine learning and text-based features. Extracts indicators such as suspicious URLs, keywords, and email structure, then trains and evaluates classification models. A small interface demonstrates phishing probability prediction.
 
 **Demo video:**   https://youtu.be/0KgpARxQnfQ
+.
 [![Watch Video](https://img.youtube.com/vi/0KgpARxQnfQ/0.jpg)](https://youtu.be/0KgpARxQnfQ)
 
 
