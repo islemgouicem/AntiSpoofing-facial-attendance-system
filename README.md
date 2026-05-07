@@ -36,7 +36,7 @@ This project was carried out by the following students:
 ### Demo videos link:
 
 - **P001 — Secure student face recognition system:** [![Watch Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-- **S005 — Phishing Email Detector using Machine Learning:**
+- **S005 — Phishing Email Detector using Machine Learning:** 
   [![Watch Video](https://img.youtube.com/vi/0KgpARxQnfQ/0.jpg)](https://youtu.be/0KgpARxQnfQ)
 
 ---
@@ -147,7 +147,7 @@ flutter run -d linux
 
 Detects phishing emails using machine learning and text-based features. Extracts indicators such as suspicious URLs, keywords, and email structure, then trains and evaluates classification models. A small interface demonstrates phishing probability prediction.
 
-**Demo video:**  
+**Demo video:**   https://youtu.be/0KgpARxQnfQ
 [![Watch Video](https://img.youtube.com/vi/0KgpARxQnfQ/0.jpg)](https://youtu.be/0KgpARxQnfQ)
 
 
