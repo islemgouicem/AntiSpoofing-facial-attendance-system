@@ -1,0 +1,51 @@
+{
+  "best_model_name": "Linear SVM",
+  "test_metrics_threshold_0_5": {
+    "roc_auc": 0.9978,
+    "f1": 0.9784,
+    "precision": 0.9773,
+    "recall": 0.9794,
+    "accuracy": 0.9837,
+    "brier_score": 0.013668
+  },
+  "threshold_transfer_from_validation": [
+    {
+      "threshold": 0.5,
+      "f1": 0.9784,
+      "precision": 0.9773,
+      "recall": 0.9794,
+      "accuracy": 0.9837
+    },
+    {
+      "threshold": 0.6,
+      "f1": 0.9793,
+      "precision": 0.9844,
+      "recall": 0.9742,
+      "accuracy": 0.9845
+    },
+    {
+      "threshold": 0.81,
+      "f1": 0.9618,
+      "precision": 0.9902,
+      "recall": 0.935,
+      "accuracy": 0.972
+    }
+  ],
+  "diagnostic_best_test_f1_threshold": {
+    "threshold": 0.56,
+    "f1": 0.9803,
+    "precision": 0.9834,
+    "recall": 0.9773
+  },
+  "error_analysis": {
+    "total_test_samples": 2573,
+    "total_errors_0_5": 42,
+    "error_rate_0_5": 0.016323,
+    "false_positives_0_5": 22,
+    "false_negatives_0_5": 20
+  },
+  "artifacts": {
+    "test_predictions_csv": "C:\\Users\\hp\\Desktop\\cppp\\AI388_CNS_projects\\Phishing Email Detector using Machine Learning\\Analysis\\reports\\test_predictions.csv",
+    "test_errors_csv": "C:\\Users\\hp\\Desktop\\cppp\\AI388_CNS_projects\\Phishing Email Detector using Machine Learning\\Analysis\\reports\\test_errors.csv"
+  }
+}
