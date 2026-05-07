@@ -35,8 +35,9 @@ This project was carried out by the following students:
 
 ### Demo videos link:
 
-- **P001 — Secure student face recognition system:** [![Watch Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-- **S005 — Phishing Email Detector using Machine Learning:** 
+- **P001 — Secure student face recognition system:** click on the image
+   [![Watch Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+- **S005 — Phishing Email Detector using Machine Learning:**  click on the image
   [![Watch Video](https://img.youtube.com/vi/0KgpARxQnfQ/0.jpg)](https://youtu.be/0KgpARxQnfQ)
 
 ---
